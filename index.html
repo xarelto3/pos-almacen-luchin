@@ -1,12 +1,556 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Terminal POS - Almacén Luchin</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Almacén Luchin — POS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #0a0f1e;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #1e2d45;
+  --accent: #10b981;
+  --accent2: #059669;
+  --gold: #f59e0b;
+  --danger: #ef4444;
+  --warn: #f97316;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #475569;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+h1,h2,h3 { font-family:'Syne',sans-serif; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--surface); } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ── UTILS ── */
+.hidden { display:none !important; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all .2s; }
+.btn-primary { background:var(--accent); color:#fff; } .btn-primary:hover { background:var(--accent2); transform:translateY(-1px); }
+.btn-danger { background:var(--danger); color:#fff; } .btn-danger:hover { opacity:.9; }
+.btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); } .btn-ghost:hover { background:var(--surface2); color:var(--text); }
+.btn-gold { background:var(--gold); color:#000; } .btn-gold:hover { opacity:.9; }
+.btn-warn { background:var(--warn); color:#fff; }
+.badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+.badge-green { background:rgba(16,185,129,.15); color:var(--accent); }
+.badge-red { background:rgba(239,68,68,.15); color:var(--danger); }
+.badge-gold { background:rgba(245,158,11,.15); color:var(--gold); }
+input,select,textarea { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:10px 14px; font-family:'DM Sans',sans-serif; font-size:14px; width:100%; transition:border .2s; outline:none; }
+input:focus,select:focus { border-color:var(--accent); }
+label { font-size:13px; color:var(--text2); margin-bottom:4px; display:block; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+.tag { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text3); }
+
+/* ── LOCK SCREEN ── */
+#lockScreen { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:9999; flex-direction:column; gap:20px; }
+#lockScreen .lock-icon { font-size:64px; }
+#lockScreen h2 { font-family:'Syne',sans-serif; font-size:24px; color:var(--danger); }
+#lockScreen p { color:var(--text2); text-align:center; max-width:320px; }
+
+/* ── LOGIN ── */
+#loginScreen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse at 30% 20%, #0d2137 0%, var(--bg) 60%); }
+.login-box { width:380px; }
+.login-logo { text-align:center; margin-bottom:40px; }
+.login-logo h1 { font-size:32px; font-weight:800; letter-spacing:-1px; }
+.login-logo h1 span { color:var(--accent); }
+.login-logo p { color:var(--text2); font-size:13px; margin-top:4px; }
+.login-box .card { padding:32px; }
+.login-box .form-group { margin-bottom:16px; }
+.login-box .btn { width:100%; justify-content:center; padding:14px; font-size:16px; margin-top:8px; }
+.login-users { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:20px; }
+.user-chip { padding:10px; border-radius:8px; border:1px solid var(--border); cursor:pointer; text-align:center; transition:all .2s; }
+.user-chip:hover { border-color:var(--accent); background:rgba(16,185,129,.05); }
+.user-chip .icon { font-size:20px; } .user-chip .name { font-size:12px; color:var(--text2); margin-top:2px; }
+
+/* ── LAYOUT ── */
+#app { display:none; min-height:100vh; }
+.sidebar { position:fixed; left:0; top:0; bottom:0; width:220px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:100; }
+.sidebar-logo { padding:24px 20px 16px; border-bottom:1px solid var(--border); }
+.sidebar-logo h2 { font-size:18px; font-weight:800; } .sidebar-logo h2 span { color:var(--accent); }
+.sidebar-logo p { font-size:11px; color:var(--text3); margin-top:2px; }
+.nav-section { padding:12px 12px 4px; font-size:10px; font-weight:700; letter-spacing:1.5px; color:var(--text3); text-transform:uppercase; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:10px 16px; margin:2px 8px; border-radius:8px; cursor:pointer; color:var(--text2); font-size:14px; transition:all .2s; }
+.nav-item:hover { background:var(--surface2); color:var(--text); }
+.nav-item.active { background:rgba(16,185,129,.1); color:var(--accent); }
+.nav-item .icon { font-size:18px; width:22px; text-align:center; }
+.sidebar-user { margin-top:auto; padding:16px; border-top:1px solid var(--border); }
+.sidebar-user .user-info { display:flex; align-items:center; gap:10px; }
+.sidebar-user .avatar { width:36px; height:36px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; }
+.sidebar-user .name { font-size:13px; font-weight:500; } .sidebar-user .role { font-size:11px; color:var(--text3); }
+.main { margin-left:220px; padding:28px; min-height:100vh; }
+.page-header { margin-bottom:24px; }
+.page-header h1 { font-size:26px; font-weight:800; letter-spacing:-0.5px; }
+.page-header p { color:var(--text2); font-size:14px; margin-top:4px; }
+
+/* ── POS SCREEN ── */
+.pos-layout { display:grid; grid-template-columns:1fr 380px; gap:20px; height:calc(100vh - 120px); }
+.pos-left { display:flex; flex-direction:column; gap:16px; overflow:hidden; }
+.pos-search { display:flex; gap:8px; }
+.pos-search input { flex:1; font-size:16px; }
+.products-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:10px; overflow-y:auto; padding-right:4px; flex:1; }
+.product-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; transition:all .2s; text-align:center; }
+.product-card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow); }
+.product-card .emoji { font-size:28px; margin-bottom:8px; }
+.product-card .pname { font-size:13px; font-weight:500; line-height:1.3; }
+.product-card .pprice { font-size:15px; font-weight:700; color:var(--accent); margin-top:4px; }
+.product-card .pstock { font-size:11px; color:var(--text3); margin-top:2px; }
+.pos-right { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); display:flex; flex-direction:column; overflow:hidden; }
+.cart-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.cart-header h3 { font-size:16px; font-weight:700; }
+.cart-items { flex:1; overflow-y:auto; padding:12px; }
+.cart-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:8px; margin-bottom:6px; background:var(--surface2); }
+.cart-item .ci-name { flex:1; font-size:13px; font-weight:500; }
+.cart-item .ci-price { font-size:13px; color:var(--text2); }
+.cart-item .qty-ctrl { display:flex; align-items:center; gap:6px; }
+.qty-btn { width:26px; height:26px; border:1px solid var(--border); background:var(--surface); border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--text); transition:all .2s; }
+.qty-btn:hover { background:var(--accent); border-color:var(--accent); }
+.qty-num { font-size:14px; font-weight:700; min-width:24px; text-align:center; }
+.cart-footer { border-top:1px solid var(--border); padding:16px 20px; }
+.total-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.total-row .label { color:var(--text2); font-size:14px; }
+.total-row .value { font-size:14px; font-weight:600; }
+.total-row.big .value { font-size:22px; font-weight:800; color:var(--accent); }
+.payment-methods { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin:12px 0; }
+.pay-method { padding:8px; border:2px solid var(--border); border-radius:8px; cursor:pointer; text-align:center; font-size:12px; font-weight:600; transition:all .2s; }
+.pay-method:hover,.pay-method.selected { border-color:var(--accent); background:rgba(16,185,129,.1); color:var(--accent); }
+.vuelto-row { background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); border-radius:8px; padding:10px 14px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+.vuelto-row span { font-size:13px; color:var(--gold); }
+.vuelto-row strong { font-size:18px; color:var(--gold); font-family:'Syne',sans-serif; }
+
+/* ── INVENTORY ── */
+.inv-toolbar { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+.inv-toolbar input { max-width:260px; }
+.table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+th { background:var(--surface2); padding:12px 16px; text-align:left; font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--text3); }
+td { padding:12px 16px; border-bottom:1px solid var(--border); font-size:14px; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:rgba(255,255,255,.02); }
+.stock-low { color:var(--danger); font-weight:700; }
+.stock-ok { color:var(--accent); }
+
+/* ── STATS CARDS ── */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+.stat-card .s-label { font-size:12px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+.stat-card .s-value { font-size:28px; font-weight:800; font-family:'Syne',sans-serif; }
+.stat-card .s-sub { font-size:12px; color:var(--text2); margin-top:4px; }
+
+/* ── MODAL ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; z-index:1000; backdrop-filter:blur(4px); }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; width:480px; max-width:95vw; max-height:90vh; overflow-y:auto; }
+.modal h3 { font-size:20px; font-weight:800; margin-bottom:20px; }
+.modal .form-group { margin-bottom:14px; }
+.modal .btn-row { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+
+/* ── SCANNER MODAL ── */
+#scannerModal .modal { width:400px; }
+#reader { border-radius:8px; overflow:hidden; }
+
+/* ── ORDERS ── */
+.order-form { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.order-form .full { grid-column:1/-1; }
+
+/* ── RECEIPT ── */
+.receipt { background:#fff; color:#000; padding:24px; border-radius:8px; max-width:320px; margin:0 auto; font-family:monospace; }
+.receipt h3 { text-align:center; font-size:18px; border-bottom:2px dashed #000; padding-bottom:8px; margin-bottom:12px; }
+.receipt .r-row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px; }
+.receipt .r-total { border-top:2px dashed #000; padding-top:8px; margin-top:8px; font-weight:700; font-size:16px; }
+.receipt .r-footer { text-align:center; font-size:12px; margin-top:12px; color:#666; }
+
+/* ── TOAST ── */
+#toast { position:fixed; bottom:24px; right:24px; background:var(--accent); color:#fff; padding:12px 20px; border-radius:10px; font-size:14px; font-weight:500; transform:translateY(80px); opacity:0; transition:all .3s; z-index:9999; box-shadow:var(--shadow); }
+#toast.show { transform:translateY(0); opacity:1; }
+#toast.error { background:var(--danger); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px) {
+  .sidebar { transform:translateX(-100%); transition:transform .3s; }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; padding:16px; }
+  .pos-layout { grid-template-columns:1fr; height:auto; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+  .hamburger { display:flex !important; }
+}
+.hamburger { display:none; position:fixed; top:16px; left:16px; z-index:200; background:var(--surface); border:1px solid var(--border); border-radius:8px; width:40px; height:40px; align-items:center; justify-content:center; cursor:pointer; font-size:20px; }
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen" class="hidden">
+  <div class="lock-icon">🔒</div>
+  <h2>Sistema Bloqueado</h2>
+  <p id="lockMsg">El período de prueba ha expirado. Contacta al administrador para renovar el acceso.</p>
+  <button class="btn btn-ghost" onclick="showAdminUnlock()">Acceso Admin</button>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>Almacén <span>Luchin</span></h1>
+      <p>Sistema POS — Terminal de Ventas</p>
+    </div>
+    <div class="card">
+      <div class="form-group">
+        <label>Selecciona tu usuario</label>
+        <div class="login-users">
+          <div class="user-chip" onclick="selectUser('admin')"><div class="icon">👑</div><div class="name">Admin</div></div>
+          <div class="user-chip" onclick="selectUser('vendedor1')"><div class="icon">🧑</div><div class="name">Vendedor 1</div></div>
+          <div class="user-chip" onclick="selectUser('vendedor2')"><div class="icon">🧑</div><div class="name">Vendedor 2</div></div>
+          <div class="user-chip" onclick="selectUser('vendedor3')"><div class="icon">🧑</div><div class="name">Vendedor 3</div></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Usuario seleccionado</label>
+        <input type="text" id="loginUser" placeholder="Selecciona arriba..." readonly>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">🚀 Ingresar al Sistema</button>
+      <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:12px;">Admin: luchin2024 | Vendedores: vender123</p>
+    </div>
+  </div>
+</div>
+
+<!-- HAMBURGER -->
+<div class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h2>Almacén <span>Luchin</span></h2>
+      <p id="trialBadge"></p>
+    </div>
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="showPage('pos')" id="nav-pos"><span class="icon">🛒</span> Punto de Venta</div>
+    <div class="nav-item" onclick="showPage('historial')" id="nav-historial"><span class="icon">📋</span> Historial</div>
+    <div class="nav-section admin-only">Gestión</div>
+    <div class="nav-item admin-only" onclick="showPage('inventario')" id="nav-inventario"><span class="icon">📦</span> Inventario</div>
+    <div class="nav-item admin-only" onclick="showPage('pedidos')" id="nav-pedidos"><span class="icon">🚚</span> Pedidos</div>
+    <div class="nav-item admin-only" onclick="showPage('reportes')" id="nav-reportes"><span class="icon">📊</span> Reportes</div>
+    <div class="nav-item admin-only" onclick="showPage('config')" id="nav-config"><span class="icon">⚙️</span> Configuración</div>
+    <div class="sidebar-user">
+      <div class="user-info">
+        <div class="avatar" id="sidebarAvatar">A</div>
+        <div><div class="name" id="sidebarName">Admin</div><div class="role" id="sidebarRole">Administrador</div></div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:10px;justify-content:center;" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- POS -->
+    <div id="page-pos">
+      <div class="page-header">
+        <h1>🛒 Punto de Venta</h1>
+        <p id="posDate"></p>
+      </div>
+      <div class="pos-layout">
+        <div class="pos-left">
+          <div class="pos-search">
+            <input type="text" id="searchProd" placeholder="🔍 Buscar producto por nombre o código..." oninput="filterProducts()">
+            <button class="btn btn-ghost" onclick="openScanner()" title="Escanear código de barras">📷 Escanear</button>
+          </div>
+          <div class="products-grid" id="productsGrid"></div>
+        </div>
+        <div class="pos-right">
+          <div class="cart-header">
+            <h3>🧾 Venta Actual</h3>
+            <button class="btn btn-danger" onclick="clearCart()" style="padding:6px 12px;font-size:12px;">Limpiar</button>
+          </div>
+          <div class="cart-items" id="cartItems">
+            <div style="text-align:center;padding:40px 20px;color:var(--text3);">
+              <div style="font-size:40px;margin-bottom:8px;">🛒</div>
+              <p>Agrega productos para comenzar</p>
+            </div>
+          </div>
+          <div class="cart-footer">
+            <div class="total-row"><span class="label">Subtotal</span><span class="value" id="subtotal">$0</span></div>
+            <div class="total-row big"><span class="label">TOTAL</span><span class="value" id="totalDisplay">$0</span></div>
+            <div style="margin:10px 0 6px;font-size:12px;color:var(--text3);font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Método de pago</div>
+            <div class="payment-methods">
+              <div class="pay-method selected" onclick="selectPay('efectivo')" id="pm-efectivo">💵 Efectivo</div>
+              <div class="pay-method" onclick="selectPay('debito')" id="pm-debito">💳 Débito</div>
+              <div class="pay-method" onclick="selectPay('transferencia')" id="pm-transferencia">📲 Transfer</div>
+            </div>
+            <div id="efectivoSection">
+              <label style="margin-bottom:4px;">Monto recibido</label>
+              <input type="number" id="montoRecibido" placeholder="$0" oninput="calcVuelto()" style="margin-bottom:8px;">
+              <div class="vuelto-row">
+                <span>Vuelto</span>
+                <strong id="vueltoDisplay">$0</strong>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:16px;" onclick="processSale()">✅ Cobrar Venta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="page-historial" class="hidden">
+      <div class="page-header"><h1>📋 Historial de Ventas</h1><p>Registro de todas las transacciones</p></div>
+      <div class="inv-toolbar">
+        <input type="date" id="filterDate" onchange="renderHistorial()" style="max-width:180px;">
+        <select id="filterVendedor" onchange="renderHistorial()" style="max-width:180px;">
+          <option value="">Todos los vendedores</option>
+          <option value="admin">Admin</option>
+          <option value="vendedor1">Vendedor 1</option>
+          <option value="vendedor2">Vendedor 2</option>
+          <option value="vendedor3">Vendedor 3</option>
+        </select>
+        <button class="btn btn-ghost" onclick="exportCSV()">📥 Exportar CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Fecha/Hora</th><th>Vendedor</th><th>Productos</th><th>Pago</th><th>Total</th><th></th></tr></thead>
+        <tbody id="historialBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- INVENTARIO -->
+    <div id="page-inventario" class="hidden">
+      <div class="page-header"><h1>📦 Inventario</h1><p>Gestión de productos y stock</p></div>
+      <div class="inv-toolbar">
+        <input type="text" id="searchInv" placeholder="🔍 Buscar producto..." oninput="renderInventario()" style="max-width:260px;">
+        <button class="btn btn-primary" onclick="openProductModal()">+ Nuevo Producto</button>
+        <button class="btn btn-ghost" onclick="exportInventarioCSV()">📥 Exportar</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Stock Mín.</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="inventarioBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PEDIDOS -->
+    <div id="page-pedidos" class="hidden">
+      <div class="page-header"><h1>🚚 Pedidos a Proveedores</h1><p>Registro de ingreso de mercadería</p></div>
+      <button class="btn btn-primary" onclick="openPedidoModal()" style="margin-bottom:20px;">+ Nuevo Pedido</button>
+      <div class="table-wrap">
+        <table><thead><tr><th>Fecha</th><th>Proveedor</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody id="pedidosBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- REPORTES -->
+    <div id="page-reportes" class="hidden">
+      <div class="page-header"><h1>📊 Reportes</h1><p>Análisis de ventas y rendimiento</p></div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <input type="date" id="reportFrom" style="max-width:180px;">
+        <input type="date" id="reportTo" style="max-width:180px;">
+        <button class="btn btn-primary" onclick="generateReport()">Generar Reporte</button>
+      </div>
+      <div class="stats-grid" id="reportStats">
+        <div class="stat-card"><div class="s-label">Total Ventas</div><div class="s-value" id="rTotalVentas">$0</div><div class="s-sub">En el período</div></div>
+        <div class="stat-card"><div class="s-label">N° Transacciones</div><div class="s-value" id="rTransacciones">0</div><div class="s-sub">Ventas realizadas</div></div>
+        <div class="stat-card"><div class="s-label">Ticket Promedio</div><div class="s-value" id="rPromedio">$0</div><div class="s-sub">Por venta</div></div>
+        <div class="stat-card"><div class="s-label">Mejor Vendedor</div><div class="s-value" id="rMejorVendedor" style="font-size:18px;">—</div><div class="s-sub">Más ventas</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <h3 style="margin-bottom:16px;">Ventas por Vendedor</h3>
+          <div id="reportVendedores"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:16px;">Productos Más Vendidos</h3>
+          <div id="reportProductos"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="page-config" class="hidden">
+      <div class="page-header"><h1>⚙️ Configuración</h1><p>Ajustes del sistema y período de prueba</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="card">
+          <h3 style="margin-bottom:16px;">🔑 Cambiar Contraseñas</h3>
+          <div class="form-group"><label>Contraseña Admin</label><input type="password" id="newPassAdmin" placeholder="Nueva contraseña"></div>
+          <div class="form-group"><label>Contraseña Vendedores</label><input type="password" id="newPassVendedor" placeholder="Nueva contraseña"></div>
+          <button class="btn btn-primary" onclick="savePasswords()">Guardar Contraseñas</button>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:16px;">⏳ Control de Período de Prueba</h3>
+          <div class="form-group"><label>Fecha de expiración</label><input type="date" id="trialExpiry"></div>
+          <div class="form-group">
+            <label>Estado del sistema</label>
+            <div style="display:flex;gap:10px;margin-top:4px;">
+              <button class="btn btn-primary" onclick="setSystemStatus(true)" id="btnActivar">✅ Activar</button>
+              <button class="btn btn-danger" onclick="setSystemStatus(false)" id="btnDesactivar">🔒 Desactivar</button>
+            </div>
+          </div>
+          <button class="btn btn-gold" onclick="saveTrialConfig()">Guardar Configuración</button>
+          <div id="trialStatus" style="margin-top:12px;"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:16px;">🏪 Datos del Negocio</h3>
+          <div class="form-group"><label>Nombre del almacén</label><input type="text" id="storeName" value="Almacén Luchin"></div>
+          <div class="form-group"><label>Dirección</label><input type="text" id="storeAddress" placeholder="Dirección..."></div>
+          <div class="form-group"><label>Teléfono</label><input type="text" id="storePhone" placeholder="+56 9..."></div>
+          <button class="btn btn-primary" onclick="saveStoreConfig()">Guardar Datos</button>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:16px;">🗑️ Datos del Sistema</h3>
+          <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Opciones para limpiar datos del sistema</p>
+          <button class="btn btn-danger" onclick="clearSales()" style="margin-bottom:8px;width:100%;justify-content:center;">Borrar historial de ventas</button>
+          <button class="btn btn-danger" onclick="resetAll()" style="width:100%;justify-content:center;">⚠️ Resetear todo el sistema</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div class="modal-overlay hidden" id="productModal">
+  <div class="modal">
+    <h3 id="productModalTitle">Nuevo Producto</h3>
+    <input type="hidden" id="productId">
+    <div class="form-group"><label>Código de barras / Código</label><input type="text" id="pCodigo" placeholder="Ej: 7891234567890"></div>
+    <div class="form-group"><label>Nombre del producto *</label><input type="text" id="pNombre" placeholder="Ej: Leche Entera 1L"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label>Categoría</label>
+        <select id="pCategoria">
+          <option>Lácteos</option><option>Bebidas</option><option>Panadería</option><option>Carnes</option>
+          <option>Frutas y Verduras</option><option>Limpieza</option><option>Snacks</option><option>Congelados</option>
+          <option>Enlatados</option><option>Higiene</option><option>Otros</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Emoji / Ícono</label><input type="text" id="pEmoji" placeholder="🥛" maxlength="4"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div class="form-group"><label>Precio venta *</label><input type="number" id="pPrecio" placeholder="$0"></div>
+      <div class="form-group"><label>Stock actual *</label><input type="number" id="pStock" placeholder="0"></div>
+      <div class="form-group"><label>Stock mínimo</label><input type="number" id="pStockMin" placeholder="5"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeProductModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Guardar Producto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PEDIDO -->
+<div class="modal-overlay hidden" id="pedidoModal">
+  <div class="modal">
+    <h3>Nuevo Pedido / Ingreso de Mercadería</h3>
+    <div class="form-group"><label>Proveedor</label><input type="text" id="pedProveedor" placeholder="Nombre del proveedor"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label>Fecha del pedido</label><input type="date" id="pedFecha"></div>
+      <div class="form-group"><label>N° Factura</label><input type="text" id="pedFactura" placeholder="Opcional"></div>
+    </div>
+    <div class="form-group"><label>Productos (uno por línea: nombre, cantidad, costo)</label>
+      <textarea id="pedProductos" rows="5" placeholder="Ej:&#10;Leche Entera 1L, 24, 800&#10;Pan Molde, 12, 1200"></textarea>
+    </div>
+    <div class="form-group"><label>Total del pedido ($)</label><input type="number" id="pedTotal" placeholder="$0"></div>
+    <div class="form-group"><label>Estado</label>
+      <select id="pedEstado"><option value="pendiente">Pendiente</option><option value="recibido">Recibido</option><option value="parcial">Recibido Parcial</option></select>
+    </div>
+    <div class="form-group"><label>Notas</label><textarea id="pedNotas" rows="2" placeholder="Observaciones..."></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closePedidoModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePedido()">Guardar Pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RECEIPT -->
+<div class="modal-overlay hidden" id="receiptModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="receipt" id="receiptContent"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeReceipt()">Cerrar</button>
+      <button class="btn btn-primary" onclick="printReceipt()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCANNER MODAL -->
+<div class="modal-overlay hidden" id="scannerModal">
+  <div class="modal" style="max-width:420px;">
+    <h3>📷 Escanear Código de Barras</h3>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">Apunta la cámara al código de barras del producto</p>
+    <div id="reader"></div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeScanner()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN UNLOCK -->
+<div class="modal-overlay hidden" id="adminUnlockModal">
+  <div class="modal" style="max-width:340px;">
+    <h3>🔑 Acc])},"sii_luchin.csv");showToast("\u2705 Exportado","ok");}
+
+// CONFIG
+function loadConfigValues(){const cfg=DB.get("config");if(!cfg)return;const el=id=>document.getElementById(id);if(el("cfgNombre"))el("cfgNombre").value=cfg.storeName||"Alm\u00e9n Luchin";if(el("cfgDireccion"))el("cfgDireccion").value=cfg.storeAddress||"Av. Esmeralda 3000, El Tabo";if(el("cfgWa"))el("cfgWa").value=cfg.storePhone||"+56950690075";if(el("trialExpiry"))el("trialExpiry").value=cfg.trialExpiry||"";}
+function saveStoreConfig(){const cfg=DB.get("config");cfg.storeName=document.getElementById("cfgNombre").value;cfg.storeAddress=document.getElementById("cfgDireccion").value;cfg.storePhone=document.getElementById("cfgWa").value;DB.set("config",cfg);showToast("Datos guardados","ok");}
+function savePasswords(){const cfg=DB.get("config");const a=document.getElementById("cpAdmin").value;const v=document.getElementById("cpVend").value;if(a)cfg.passAdmin=a;if(v)cfg.passVend=v;DB.set("config",cfg);document.getElementById("cpAdmin").value="";document.getElementById("cpVend").value="";showToast("Contrase\u00f1as actualizadas","ok");}
+function setSystemActive(active){const cfg=DB.get("config");cfg.systemActive=active;DB.set("config",cfg);updateTrialBadge();showToast(active?"\u2705 Sistema activado":"\U0001f512 Sistema bloqueado",active?"ok":"err");const msg=document.getElementById("trialStatusMsg");if(msg)msg.innerHTML=`<span class="badge ${active?"badge-green":"badge-red"}">${active?"\u2705 ACTIVO":"\U0001f512 BLOQUEADO"}</span>`;}
+function saveTrial(){const cfg=DB.get("config");cfg.trialExpiry=document.getElementById("trialExpiry").value;DB.set("config",cfg);updateTrialBadge();showToast("Configuraci\u00f3n guardada","ok");}
+function clearSalesData(){if(!confirm("\u00bfBorrar TODAS las ventas?"))return;DB.set("sales",[]);showToast("Historial borrado","ok");}
+function resetSystem(){if(!confirm("\u26a0\ufe0f RESET TOTAL. \u00bfContinuar?"))return;if(!confirm("\u00bfEst\u00e1s SEGURO?"))return;localStorage.clear();location.reload();}
+
+// ADMIN UNLOCK
+function showAdminUnlock(){document.getElementById("adminUnlockModal").classList.remove("hidden");}
+function doAdminUnlock(){
+  const cfg=DB.get("config");
+  if(document.getElementById("unlockPass").value===cfg.passAdmin){cfg.systemActive=true;DB.set("config",cfg);document.getElementById("lockScreen").classList.add("hidden");document.getElementById("adminUnlockModal").classList.add("hidden");showToast("Sistema desbloqueado","ok");}
+  else showToast("Contrase\u00f1a incorrecta","err");
+}
+
+// GENIO
+function setGenioMode(mode){
+  genioMode=mode;["vendedor","admin","cliente"].forEach(m=>document.getElementById("gm-"+m)?.classList.toggle("active",m===mode));
+  const labels={vendedor:"Modo Vendedor \u2014 Asistente de ventas",admin:"Modo Admin \u2014 An\u00e1lisis y gesti\u00f3n",cliente:"Modo Cliente \u2014 Recetas econ\u00f3micas"};
+  document.getElementById("genioModeLabel").textContent=labels[mode];clearChat();
+  const welcome={vendedor:"\u00a1Hola! \U0001f9de Soy el Genio del **Alm\u00e9n Luchin**. En Modo Vendedor puedo ayudarte con precios, stock y c\u00e1lculos de vuelto. \u00bfEn qu\u00e9 te ayudo?",admin:"\u00a1Hola Nicol! En Modo Admin puedo ayudarte a analizar ventas, detectar stock cr\u00edtico y sugerir pedidos. \u00bfQu\u00e9 quieres revisar?",cliente:"\u00a1Bienvenido! \U0001f372 Soy el Genio del Alm\u00e9n Luchin. Puedo sugerirte **recetas econ\u00f3micas** con los productos que tenemos. \u00bfCu\u00e1ntas personas son y cu\u00e1nto es tu presupuesto?"};
+  addBotMessage(welcome[mode]);
+}
+function clearChat(){genioMessages=[];document.getElementById("genioMessages").innerHTML="";}
+async function sendGenio(){
+  const input=document.getElementById("genioInput");const text=input.value.trim();if(!text)return;input.value="";addUserMessage(text);
+  const thinkEl=document.createElement("div");thinkEl.className="genio-thinking";thinkEl.innerHTML="<div class=\"dot\"></div><div class=\"dot\"></div><div class=\"dot\"></div>";document.getElementById("genioMessages").appendChild(thinkEl);scrollChat();
+  try{
+    const prods=DB.get("products")||[];const today=new Date().toISOString().split("T")[0];const sales=DB.get("sales")||[];const todaySales=sales.filter(s=>s.fecha.startsWith(today));
+    const contexts={
+      vendedor:`Eres el Genio asistente de ventas del Alm\u00e9n Luchin, en Av. Esmeralda 3000, El Tabo, Chile. El vendedor es ${currentUser.name}. Productos disponibles: ${prods.slice(0,15).map(p=>`${p.nombre}($${p.precio},stock:${p.stock})`).join(", ")}. Responde en espa\u00f1ol, breve y \u00fatil para una venta presencial.`,
+      admin:`Eres el Genio administrador del Alm\u00e9n Luchin. Admin: Nicol. Hoy: ${todaySales.length} ventas por $${todaySales.reduce((a,s)=>a+s.total,0)}. Stock cr\u00edtico: ${prods.filter(p=>p.stock<=p.stockMin).map(p=>p.nombre).join(", ")||"ninguno"}. Responde en espa\u00f1ol con an\u00e1lisis \u00fatil para gesti\u00f3n de almac\u00e9n.`,
+      cliente:`Eres el Genio del Alm\u00e9n Luchin ayudando a clientes con recetas econ\u00f3micas. Productos disponibles: ${prods.filter(p=>p.stock>0).map(p=>`${p.emoji}${p.nombre}($${p.precio})`).join(", ")}. Sugiere recetas pr\u00e1cticas y econ\u00f3micas. Responde en espa\u00f1ol amigable.`
+    };
+    genioMessages.push({role:"user",content:text});
+    const response=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,system:contexts[genioMode],messages:genioMessages.slice(-10)})});
+    const data=await response.json();thinkEl.remove();
+    if(data.content&&data.content[0]){const reply=data.content[0].text;genioMessages.push({role:"assistant",content:reply});addBotMessage(reply);}
+    else addBotMessage("No pude conectarme. Verifica la conexi\u00f3n e intenta de nuevo.");
+  }catch(e){thinkEl.remove();addBotMessage("Error de conexi\u00f3n. El Genio necesita internet para funcionar. \U0001f50c");}
+}
+function addUserMessage(text){const el=document.createElement("div");el.className="msg msg-user";el.textContent=text;document.getElementById("genioMessages").appendChild(el);scrollChat();}
+function addBotMessage(text){const el=document.createElement("div");el.className="msg msg-bot";el.innerHTML=text.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>");document.getElementById("genioMessages").appendChild(el);scrollChat();}
+function scrollChat(){const el=document.getElementById("genioMessages");if(el)el.scrollTop=el.scrollHeight;}
+
+// UTILS
+function fmt(n){return Math.round(n).toLocaleString("es-CL");}
+function formatDate(d){if(!d)return "\u2014";return new Date(d+"T12:00:00").toLocaleDateString("es-CL");}
+function formatDatetime(d){if(!d)return "\u2014";const dt=new Date(d);return dt.toLocaleDateString("es-CL")+" "+dt.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});}
+function payBadge(p){return p==="efectivo"?"badge-green":p==="debito"?"badge-blue":"badge-gold";}
+let toastTimer;
+function showToast(msg,type="ok"){const t=document.getElementById("toast");t.textContent=msg;t.className="show "+type;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className="",3000);}
+function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);}
+document.addEventListener("keydown",e=>{if(!currentUser)return;if(e.key==="Escape"){document.querySelectorAll(".modal-overlay").forEach(m=>m.classList.add("hidden"));closeScanner();}if(e.ctrlKey&&e.key==="k"){e.preventDefault();document.getElementById("searchProd")?.focus();}});
+</script>
+</body>
 </html>
