@@ -551,21 +551,21 @@ tr:last-child td{border-bottom:none}
 // DB
 const DB={get:k=>{try{return JSON.parse(localStorage.getItem("lk_"+k))}catch(e){return null}},set:(k,v)=>localStorage.setItem("lk_"+k,JSON.stringify(v)),def:(k,v)=>{if(DB.get(k)===null)DB.set(k,v)}};
 DB.def("prods",[
-  {id:"P01",cod:"7801001",nm:"Leche Entera 1L",cat:"Lacteos",em:"\U0001f95b",pr:1290,co:980,st:24,sm:6},
-  {id:"P02",cod:"7801002",nm:"Pan Marraqueta",cat:"Panaderia",em:"\U0001f35e",pr:150,co:80,st:50,sm:20},
-  {id:"P03",cod:"7801003",nm:"Coca-Cola 1.5L",cat:"Bebidas",em:"\U0001f964",pr:1890,co:1400,st:12,sm:4},
-  {id:"P04",cod:"7801004",nm:"Huevos x12",cat:"Abarrotes",em:"\U0001f95a",pr:2990,co:2400,st:8,sm:3},
-  {id:"P05",cod:"7801005",nm:"Aceite 1L",cat:"Abarrotes",em:"\U0001fad9",pr:2490,co:1900,st:15,sm:5},
-  {id:"P06",cod:"7801006",nm:"Azucar 1kg",cat:"Abarrotes",em:"\U0001f36c",pr:1190,co:900,st:20,sm:5},
-  {id:"P07",cod:"7801007",nm:"Arroz 1kg",cat:"Abarrotes",em:"\U0001f35a",pr:990,co:750,st:18,sm:5},
-  {id:"P08",cod:"7801008",nm:"Fideos 500g",cat:"Abarrotes",em:"\U0001f35d",pr:790,co:550,st:22,sm:6},
-  {id:"P09",cod:"7801009",nm:"Detergente 400g",cat:"Limpieza",em:"\U0001f9f4",pr:2190,co:1700,st:10,sm:3},
-  {id:"P10",cod:"7801010",nm:"Papel Higienico x4",cat:"Higiene Personal",em:"\U0001f9fb",pr:1590,co:1200,st:16,sm:4},
-  {id:"P11",cod:"7801011",nm:"Yogurt 1kg",cat:"Lacteos",em:"\U0001f353",pr:2190,co:1700,st:6,sm:3},
-  {id:"P12",cod:"7801012",nm:"Jabon 90g",cat:"Higiene Personal",em:"\U0001f9fc",pr:990,co:720,st:14,sm:4},
-  {id:"P13",cod:"7801013",nm:"Tomate pasta 200g",cat:"Abarrotes",em:"\U0001f345",pr:690,co:500,st:20,sm:6},
-  {id:"P14",cod:"7801014",nm:"Porotos 500g",cat:"Abarrotes",em:"\U0001fad8",pr:1090,co:800,st:12,sm:4},
-  {id:"P15",cod:"7801015",nm:"Agua 1.5L",cat:"Bebidas",em:"\U0001f4a7",pr:890,co:600,st:30,sm:10},
+  {id:"P01",cod:"7801001",nm:"Leche Entera 1L",cat:"Lacteos",em:"\🥛",pr:1290,co:980,st:24,sm:6},
+  {id:"P02",cod:"7801002",nm:"Pan Marraqueta",cat:"Panaderia",em:"\🍞",pr:150,co:80,st:50,sm:20},
+  {id:"P03",cod:"7801003",nm:"Coca-Cola 1.5L",cat:"Bebidas",em:"\🥤",pr:1890,co:1400,st:12,sm:4},
+  {id:"P04",cod:"7801004",nm:"Huevos x12",cat:"Abarrotes",em:"\🥚",pr:2990,co:2400,st:8,sm:3},
+  {id:"P05",cod:"7801005",nm:"Aceite 1L",cat:"Abarrotes",em:"\🫙",pr:2490,co:1900,st:15,sm:5},
+  {id:"P06",cod:"7801006",nm:"Azucar 1kg",cat:"Abarrotes",em:"\🍬",pr:1190,co:900,st:20,sm:5},
+  {id:"P07",cod:"7801007",nm:"Arroz 1kg",cat:"Abarrotes",em:"\🍚",pr:990,co:750,st:18,sm:5},
+  {id:"P08",cod:"7801008",nm:"Fideos 500g",cat:"Abarrotes",em:"\🍝",pr:790,co:550,st:22,sm:6},
+  {id:"P09",cod:"7801009",nm:"Detergente 400g",cat:"Limpieza",em:"\🧴",pr:2190,co:1700,st:10,sm:3},
+  {id:"P10",cod:"7801010",nm:"Papel Higienico x4",cat:"Higiene Personal",em:"\🧻",pr:1590,co:1200,st:16,sm:4},
+  {id:"P11",cod:"7801011",nm:"Yogurt 1kg",cat:"Lacteos",em:"\🍓",pr:2190,co:1700,st:6,sm:3},
+  {id:"P12",cod:"7801012",nm:"Jabon 90g",cat:"Higiene Personal",em:"\🧼",pr:990,co:720,st:14,sm:4},
+  {id:"P13",cod:"7801013",nm:"Tomate pasta 200g",cat:"Abarrotes",em:"\🍅",pr:690,co:500,st:20,sm:6},
+  {id:"P14",cod:"7801014",nm:"Porotos 500g",cat:"Abarrotes",em:"\🫘",pr:1090,co:800,st:12,sm:4},
+  {id:"P15",cod:"7801015",nm:"Agua 1.5L",cat:"Bebidas",em:"\💧",pr:890,co:600,st:30,sm:10},
 ]);
 DB.def("sales",[]);
 DB.def("recs",[]);
@@ -573,10 +573,10 @@ DB.def("cfg",{name:"Almacen Luchin",addr:"Av. Esmeralda 3000, El Tabo",wa:"+5695
 DB.def("caja",null);
 
 const USERS=[
-  {id:"nicol",nm:"Nicol",role:"admin",ic:"\U0001f451"},
-  {id:"ignacio",nm:"Ignacio",role:"vend",ic:"\U0001f9d1"},
-  {id:"vend2",nm:"Vendedor 2",role:"vend",ic:"\U0001f9d1"},
-  {id:"vend3",nm:"Vendedor 3",role:"vend",ic:"\U0001f9d1"},
+  {id:"nicol",nm:"Nicol",role:"admin",ic:"\👑"},
+  {id:"ignacio",nm:"Ignacio",role:"vend",ic:"\🧑"},
+  {id:"vend2",nm:"Vendedor 2",role:"vend",ic:"\🧑"},
+  {id:"vend3",nm:"Vendedor 3",role:"vend",ic:"\🧑"},
 ];
 
 let CU=null,cart=[],pay="e",scanner=null,scanOpen=false,curBoleta=null;
@@ -704,7 +704,7 @@ function renderProds(q=""){
   const f=prods.filter(p=>!fq||p.nm.toLowerCase().includes(fq)||p.cod.includes(fq)||p.cat.toLowerCase().includes(fq));
   const g=document.getElementById("pgrid");if(!g)return;
   if(!f.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:36px;color:var(--t3)"><div style="font-size:32px;margin-bottom:7px">&#128269;</div><p>Sin resultados</p></div>`;return;}
-  g.innerHTML=f.map(p=>`<div class="pc2 ${p.st<=0?"oos":""}" onclick="${p.st>0?"addCart('"+p.id+"')":"toast('Sin stock','err')"}"><div class="pe">${p.em||"\U0001f4e6"}</div><div class="pn">${p.nm}</div><div class="pp">$${fmt(p.pr)}</div><div class="ps">${p.st<=0?"Sin stock":p.st<=p.sm?"\u26a0 "+p.st+" uds":p.st+" uds"}</div></div>`).join("");
+  g.innerHTML=f.map(p=>`<div class="pc2 ${p.st<=0?"oos":""}" onclick="${p.st>0?"addCart('"+p.id+"')":"toast('Sin stock','err')"}"><div class="pe">${p.em||"\📦"}</div><div class="pn">${p.nm}</div><div class="pp">$${fmt(p.pr)}</div><div class="ps">${p.st<=0?"Sin stock":p.st<=p.sm?"\u26a0 "+p.st+" uds":p.st+" uds"}</div></div>`).join("");
 }
 function filterProds(){renderProds(document.getElementById("spro\u0434")?.value||"");}
 
@@ -713,7 +713,7 @@ function addCart(id){
   const prods=DB.get("prods")||[];const p=prods.find(x=>x.id===id);if(!p||p.st<=0)return;
   const ex=cart.find(c=>c.id===id);
   if(ex){if(ex.q>=p.st){toast("No hay mas stock","err");return;}ex.q++;}
-  else cart.push({id:p.id,nm:p.nm,em:p.em||"\U0001f4e6",pr:p.pr,q:1});
+  else cart.push({id:p.id,nm:p.nm,em:p.em||"\📦",pr:p.pr,q:1});
   updateCart();
 }
 function updateCart(){
@@ -752,13 +752,13 @@ function doSale(){
 // BOLETA
 function showBoleta(v){
   curBoleta=v;const cfg=DB.get("cfg");const d=new Date(v.dt);
-  document.getElementById("rcont").innerHTML=`<h3>${cfg.name}</h3><div class="rs">${cfg.addr}</div><div class="rr"><span>Fecha:</span><span>${d.toLocaleDateString("es-CL")}</span></div><div class="rr"><span>Hora:</span><span>${d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"})}</span></div><div class="rr"><span>Vendedor:</span><span>${v.unm}</span></div><div class="rr"><span>Pago:</span><span>${v.pay==="e"?"Efectivo":v.pay==="d"?"Debito":"Transferencia"}</span></div><div style="border-top:1px dashed #999;margin:7px 0"></div>${v.items.map(i=>`<div class="rr"><span>${i.em} ${i.nm} x${i.q}</span><span>$${fmt(i.pr*i.q)}</span></div>`).join("")}<div class="rr rtot"><span>TOTAL</span><span>$${fmt(v.tot)}</span></div>${v.pay==="e"?`<div class="rr"><span>Recibido</span><span>$${fmt(v.rec)}</span></div><div class="rr"><span>Vuelto</span><span>$${fmt(v.vuelto)}</span></div>`:""}<div class="rft">\u00a1Gracias por su compra!<br>\u00a1Vuelva pronto! \U0001f49a</div>`;
+  document.getElementById("rcont").innerHTML=`<h3>${cfg.name}</h3><div class="rs">${cfg.addr}</div><div class="rr"><span>Fecha:</span><span>${d.toLocaleDateString("es-CL")}</span></div><div class="rr"><span>Hora:</span><span>${d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"})}</span></div><div class="rr"><span>Vendedor:</span><span>${v.unm}</span></div><div class="rr"><span>Pago:</span><span>${v.pay==="e"?"Efectivo":v.pay==="d"?"Debito":"Transferencia"}</span></div><div style="border-top:1px dashed #999;margin:7px 0"></div>${v.items.map(i=>`<div class="rr"><span>${i.em} ${i.nm} x${i.q}</span><span>$${fmt(i.pr*i.q)}</span></div>`).join("")}<div class="rr rtot"><span>TOTAL</span><span>$${fmt(v.tot)}</span></div>${v.pay==="e"?`<div class="rr"><span>Recibido</span><span>$${fmt(v.rec)}</span></div><div class="rr"><span>Vuelto</span><span>$${fmt(v.vuelto)}</span></div>`:""}<div class="rft">\u00a1Gracias por su compra!<br>\u00a1Vuelva pronto! \💚</div>`;
   document.getElementById("mbol").classList.remove("h");
 }
 function sendWA(){
   if(!curBoleta)return;const cfg=DB.get("cfg");const v=curBoleta;const d=new Date(v.dt);
   const items=v.items.map(i=>`  ${i.em} ${i.nm} x${i.q} = $${fmt(i.pr*i.q)}`).join("\n");
-  const msg=`\U0001f9fe *Boleta ${cfg.name}*\n\U0001f4c5 ${d.toLocaleDateString("es-CL")} ${d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"})}\n\n${items}\n\n*TOTAL: $${fmt(v.tot)}*\n${v.pay==="e"?`Vuelto: $${fmt(v.vuelto)}\n`:""}\U0001f49a \u00a1Gracias por comprar en ${cfg.name}!`;
+  const msg=`\🧾 *Boleta ${cfg.name}*\n\U0001f4c5 ${d.toLocaleDateString("es-CL")} ${d.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"})}\n\n${items}\n\n*TOTAL: $${fmt(v.tot)}*\n${v.pay==="e"?`Vuelto: $${fmt(v.vuelto)}\n`:""}\💚 \u00a1Gracias por comprar en ${cfg.name}!`;
   window.open(`https://wa.me/${cfg.wa.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 
@@ -768,7 +768,7 @@ function openScan(){
   scanner=new Html5Qrcode("reader");
   scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:230,height:140}},(code)=>{
     closeScan();const prods=DB.get("prods")||[];const p=prods.find(x=>x.cod===code);
-    if(p){addCart(p.id);toast("\U0001f4e6 "+p.nm,"ok");}
+    if(p){addCart(p.id);toast("\📦 "+p.nm,"ok");}
     else{document.getElementById("spro\u0434").value=code;filterProds();toast("Codigo escaneado","inf");}
   },()=>{}).catch(()=>{toast("Error camara","err");closeScan();});
 }
@@ -810,7 +810,7 @@ function renderInv(){
   const prods=DB.get("prods")||[];const q=(document.getElementById("sinv")?.value||"").toLowerCase();
   const f=prods.filter(p=>!q||p.nm.toLowerCase().includes(q)||p.cod.includes(q));
   const tb=document.getElementById("invb");if(!tb)return;
-  tb.innerHTML=f.map(p=>{const c=p.st<=0?"r":p.st<=p.sm?"g2":"g";return`<tr><td style="font-size:11px;color:var(--t3)">${p.cod||"—"}</td><td><div style="display:flex;align-items:center;gap:7px"><span>${p.em||"\U0001f4e6"}</span><strong>${p.nm}</strong></div></td><td style="font-weight:700;color:var(--a)">$${fmt(p.pr)}</td><td style="font-weight:700;color:${p.st<=0?"var(--r)":p.st<=p.sm?"var(--g)":""}">${p.st}</td><td style="color:var(--t2)">${p.sm}</td><td><span class="badge ${p.st<=0?"bar":p.st<=p.sm?"bao":"bag"}">${p.st<=0?"Sin stock":p.st<=p.sm?"Bajo":"OK"}</span></td><td><div style="display:flex;gap:5px"><button class="btn bg bsm" onclick="editProd('${p.id}')">&#9998;</button><button class="btn bd bsm" onclick="delProd('${p.id}')">&#128465;</button></div></td></tr>`;}).join()||`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">Sin productos</td></tr>`;
+  tb.innerHTML=f.map(p=>{const c=p.st<=0?"r":p.st<=p.sm?"g2":"g";return`<tr><td style="font-size:11px;color:var(--t3)">${p.cod||"—"}</td><td><div style="display:flex;align-items:center;gap:7px"><span>${p.em||"\📦"}</span><strong>${p.nm}</strong></div></td><td style="font-weight:700;color:var(--a)">$${fmt(p.pr)}</td><td style="font-weight:700;color:${p.st<=0?"var(--r)":p.st<=p.sm?"var(--g)":""}">${p.st}</td><td style="color:var(--t2)">${p.sm}</td><td><span class="badge ${p.st<=0?"bar":p.st<=p.sm?"bao":"bag"}">${p.st<=0?"Sin stock":p.st<=p.sm?"Bajo":"OK"}</span></td><td><div style="display:flex;gap:5px"><button class="btn bg bsm" onclick="editProd('${p.id}')">&#9998;</button><button class="btn bd bsm" onclick="delProd('${p.id}')">&#128465;</button></div></td></tr>`;}).join()||`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">Sin productos</td></tr>`;
 }
 function openProd(){document.getElementById("ptit").textContent="Nuevo Producto";document.getElementById("pid").value="";["pco","pem","pno","ppr","pco2","pst","psm"].forEach(id=>document.getElementById(id).value="");document.getElementById("mprod").classList.remove("h");}
 function editProd(id){
@@ -825,7 +825,7 @@ function saveProd(){
   const nm=document.getElementById("pno").value.trim();const pr=parseFloat(document.getElementById("ppr").value);const st=parseFloat(document.getElementById("pst").value);
   if(!nm||isNaN(pr)||isNaN(st)){toast("Completa los campos requeridos","err");return;}
   const prods=DB.get("prods")||[];const id=document.getElementById("pid").value;
-  const p={id:id||"P"+Date.now(),cod:document.getElementById("pco").value.trim(),em:document.getElementById("pem").value.trim()||"\U0001f4e6",nm,cat:document.getElementById("pca").value,pr,co:parseFloat(document.getElementById("pco2").value)||0,st,sm:parseFloat(document.getElementById("psm").value)||5};
+  const p={id:id||"P"+Date.now(),cod:document.getElementById("pco").value.trim(),em:document.getElementById("pem").value.trim()||"\📦",nm,cat:document.getElementById("pca").value,pr,co:parseFloat(document.getElementById("pco2").value)||0,st,sm:parseFloat(document.getElementById("psm").value)||5};
   if(id){const i=prods.findIndex(x=>x.id===id);if(i>=0)prods[i]=p;else prods.push(p);}else prods.push(p);
   DB.set("prods",prods);closeM("mprod");renderInv();renderProds();toast("Producto guardado","ok");
 }
