@@ -646,6 +646,10 @@ function startApp(){
   document.getElementById("sbname").textContent=CU.nm;
   document.getElementById("sbrole").textContent=CU.role==="admin"?"Administrador":"Vendedor";
   document.querySelectorAll(".aonly").forEach(el=>el.style.display=CU.role==="admin"?"":"none");
+  // Admin directo al dashboard
+  const btnCaja=document.getElementById("btnCierreCaja");
+  if(btnCaja)btnCaja.style.display=CU.role==="admin"?"none":"";
+  if(CU.role==="admin"){goPage("dash");return;}
   const caja=DB.get("caja");
   if(!caja||caja.uid!==CU.id||caja.closed){openCaja();}
   else{goPage("pos");renderProds();}
